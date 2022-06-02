@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-class reverseGame extends Phaser.Scene {
+class reversiGame extends Phaser.Scene {
   public pieceLayer!: Phaser.Tilemaps.TilemapLayer;
 
   preload() {
@@ -9,7 +9,7 @@ class reverseGame extends Phaser.Scene {
 
     this.load.tilemapTiledJSON(
       "background",
-      "assets/tilemaps/json/reverseBG.json"
+      "assets/tilemaps/json/reversiBG.json"
     );
   }
 
@@ -53,4 +53,4 @@ class reverseGame extends Phaser.Scene {
     }
   }
 }
-export default reverseGame;
+export default reversiGame;
