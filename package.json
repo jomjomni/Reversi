@@ -1,0 +1,21 @@
+{
+  "name": "reverse",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/parser": "^5.27.0",
+    "eslint": "^8.16.0",
+    "prettier": "2.6.2",
+    "typescript": "^4.7.2",
+    "vite": "^2.9.9"
+  },
+  "dependencies": {
+    "phaser": "^3.55.2"
+  }
+}
