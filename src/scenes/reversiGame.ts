@@ -182,5 +182,6 @@ class reversiGame extends Phaser.Scene {
     }
   }
 }
+
 export default reversiGame;
 
