@@ -56,6 +56,13 @@ class reversiGame extends Phaser.Scene {
   WHITE_PLAYER = "white";
   BLACK_PLAYER = "black";
   putPlayer = this.WHITE_PLAYER;
+  TITLE = "Reversi"
+  turnPlayer!: Phaser.GameObjects.Text;
+  guiWidth: number | undefined;
+  guiWhitePieceNumber!: Phaser.GameObjects.Text;
+  guiBlackPieceNumber!: Phaser.GameObjects.Text;
+  whitePieceNumber = 0
+  blackPieceNumber = 0
 
   constructor() {
     super({ key: "reversiGame" });
@@ -74,7 +81,7 @@ class reversiGame extends Phaser.Scene {
   create() {
     const map = this.make.tilemap({ key: "background" });
     const tileset = map.addTilesetImage("background", "tileset");
-    const platforms = map.createLayer("layser0", tileset, 0, 0);
+    const platforms = map.createLayer("layer0", tileset, 0, 0);
     platforms.setScale(6, 6);
     platforms.depth = -1;
 
@@ -90,7 +97,35 @@ class reversiGame extends Phaser.Scene {
     this.pieceLayer.depth = 1;
 
     this.pieceInitialize();
+
+    this.guiWidth = platforms.width * platforms.scaleX
+    this.add.text(this.guiWidth + 10, 10, this.TITLE, {font: '30px Arial'})
+    this.turnPlayer = this.add.text(this.guiWidth + 10, 50, `This turn: ${this.putPlayer}`, {font: '30px Arial'})
+
+    this.guiWhitePieceNumber = this.add.text(this.guiWidth + 10, 100, `White Pieces: ${this.whitePieceNumber}`, {font: '30px Arial'})
+    this.guiBlackPieceNumber = this.add.text(this.guiWidth + 10, 150, `Black Pieces: ${this.blackPieceNumber}`, {font: '30px Arial'})
+    this.countPiece()
   }
+
+  countPiece() {
+    this.whitePieceNumber = 0
+    this.blackPieceNumber = 0
+
+    for(let i = 0; i < this.board.length; i++){
+      for(let j = 0; j < this.board.at(i)?.length; j++){
+        const piece = this.board.at(i)?.at(j)
+        if(piece?.current_color == piece?.WHITE_PIECE){
+          this.whitePieceNumber++
+        }else if(piece?.current_color == piece?.BLACK_PIECE){
+          this.blackPieceNumber++
+        }
+      }
+    }
+
+    this.guiWhitePieceNumber.setText(`White Pieces: ${this.whitePieceNumber}`)
+    this.guiBlackPieceNumber.setText(`Black Pieces: ${this.blackPieceNumber}`)
+  }
+
   pieceInitialize() {
     this.putPiece(this.WHITE_PLAYER, 4, 4);
     this.putPiece(this.WHITE_PLAYER, 5, 5);
@@ -124,6 +159,9 @@ class reversiGame extends Phaser.Scene {
           targetPiece.put(this.putPlayer);
           this.putPiece(this.putPlayer, pointX, pointY);
           this.putPlayer = this.changePlayer(this.putPlayer);
+          this.turnPlayer.setText(`This turn: ${this.putPlayer}`)
+
+          this.countPiece()
         }
       }
     }
