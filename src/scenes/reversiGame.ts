@@ -3,56 +3,7 @@ import Piece from "../classes/piece";
 
 class reversiGame extends Phaser.Scene {
   public pieceLayer!: Phaser.Tilemaps.TilemapLayer;
-  board: Piece[][] = [
-    [
-      new Piece(0, 0),
-      new Piece(0, 1),
-      new Piece(0, 2),
-      new Piece(0, 3),
-      new Piece(0, 4),
-      new Piece(0, 5),
-    ],
-    [
-      new Piece(1, 0),
-      new Piece(1, 1),
-      new Piece(1, 2),
-      new Piece(1, 3),
-      new Piece(1, 4),
-      new Piece(1, 5),
-    ],
-    [
-      new Piece(2, 0),
-      new Piece(2, 1),
-      new Piece(2, 2),
-      new Piece(2, 3),
-      new Piece(2, 4),
-      new Piece(2, 5),
-    ],
-    [
-      new Piece(3, 0),
-      new Piece(3, 1),
-      new Piece(3, 2),
-      new Piece(3, 3),
-      new Piece(3, 4),
-      new Piece(3, 5),
-    ],
-    [
-      new Piece(4, 0),
-      new Piece(4, 1),
-      new Piece(4, 2),
-      new Piece(4, 3),
-      new Piece(4, 4),
-      new Piece(4, 5),
-    ],
-    [
-      new Piece(5, 0),
-      new Piece(5, 1),
-      new Piece(5, 2),
-      new Piece(5, 3),
-      new Piece(5, 4),
-      new Piece(5, 5),
-    ],
-  ];
+  board!: Piece[][];
   WHITE_PLAYER = "white";
   BLACK_PLAYER = "black";
   putPlayer = this.WHITE_PLAYER;
@@ -97,6 +48,7 @@ class reversiGame extends Phaser.Scene {
     this.pieceLayer.setScale(3, 3);
     this.pieceLayer.depth = 1;
 
+    this.boardInitialize()
     this.pieceInitialize();
 
     this.guiWidth = platforms.width * platforms.scaleX
@@ -106,6 +58,37 @@ class reversiGame extends Phaser.Scene {
     this.guiWhitePieceNumber = this.add.text(this.guiWidth + 10, 100, `White Pieces: ${this.whitePieceNumber}`, {font: '30px Arial'})
     this.guiBlackPieceNumber = this.add.text(this.guiWidth + 10, 150, `Black Pieces: ${this.blackPieceNumber}`, {font: '30px Arial'})
     this.countPiece()
+
+    const button = this.add.rectangle(this.guiWidth + 150, 425, 100, 50, 0xffffff)
+    this.add.text(this.guiWidth + 110, 410, `Reset`, {font: '30px Arial', color: '#000'})
+
+    this.guiGameEndText = this.add.text(this.guiWidth + 10, 300, ``, {font: '30px Arial'})
+  }
+
+  resetGame() {
+    for(let i = 0; i < this.board.length; i++){
+      for(let j = 0; j < this.board.at(i)?.length; j++){
+        this.pieceLayer.removeTileAt(i + 2, j + 2)
+      }
+    }
+    this.boardInitialize()
+    this.pieceInitialize()
+    this.countPiece()
+    this.putPlayer = this.WHITE_PLAYER
+    this.turnPlayer.setText(`This turn: ${this.putPlayer}`)
+    this.guiGameEndText.setText('')
+
+  }
+
+  boardInitialize() {
+    this.board = []
+    for(let i = 0; i < 6; i++){
+      const boardX = []
+      for(let j = 0; j < 6; j++){
+        boardX.push(new Piece(i, j))
+      }
+      this.board.push(boardX)
+    }
   }
 
   countPiece() {
@@ -146,7 +129,7 @@ class reversiGame extends Phaser.Scene {
 
   update() {
     if(this.isSkip(this.putPlayer)){
-      this.changePlayer(this.putPlayer)
+      this.putPlayer = this.changePlayer(this.putPlayer)
       this.turnPlayer.setText(`This turn: ${this.putPlayer}(Skip)`)
 
       if(this.isSkip(this.putPlayer)){
@@ -160,6 +143,10 @@ class reversiGame extends Phaser.Scene {
     );
 
     if (this.input.manager.activePointer.isDown) {
+      if(worldPoint.x >= this.guiWidth + 90 && worldPoint.x <= this.guiWidth + 200 && worldPoint.y >= 400 && worldPoint.y <= 450){
+        this.resetGame()
+        return
+      }
       const pointX = Math.ceil(worldPoint.x / 48) - 1;
       const pointY = Math.ceil(worldPoint.y / 48) - 1;
 
@@ -238,7 +225,7 @@ class reversiGame extends Phaser.Scene {
     this.countPiece()
     let winner = ""
     if(this.whitePieceNumber == this.blackPieceNumber){
-      this.guiGameEndText = this.add.text(this.guiWidth + 10, 300, `Tie Game!`, {font: '30px Arial'})
+      this.guiGameEndText.setText(`Tie Game!`)
       return
     }
 
@@ -247,7 +234,7 @@ class reversiGame extends Phaser.Scene {
     }else{
       winner = "Black"
     }
-    this.guiGameEndText = this.add.text(this.guiWidth + 10, 300, `${winner} is Winner!`, {font: '30px Arial'})
+    this.guiGameEndText.setText(`${winner} is Winner!`)
   }
 
   isSkip(putPlayer: string): boolean {
