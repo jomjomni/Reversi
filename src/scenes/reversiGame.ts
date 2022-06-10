@@ -63,6 +63,7 @@ class reversiGame extends Phaser.Scene {
   guiBlackPieceNumber!: Phaser.GameObjects.Text;
   whitePieceNumber = 0
   blackPieceNumber = 0
+  guiGameEndText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: "reversiGame" });
@@ -144,6 +145,16 @@ class reversiGame extends Phaser.Scene {
   }
 
   update() {
+    if(this.isSkip(this.putPlayer)){
+      this.changePlayer(this.putPlayer)
+      this.turnPlayer.setText(`This turn: ${this.putPlayer}(Skip)`)
+
+      if(this.isSkip(this.putPlayer)){
+        this.turnPlayer.setText(`Game is End.`)
+        this.gameEnd()
+      }
+    }
+
     const worldPoint = this.input.activePointer.positionToCamera(
       this.cameras.main
     );
@@ -155,7 +166,7 @@ class reversiGame extends Phaser.Scene {
       if (pointX >= 2 && pointX <= 7 && pointY >= 2 && pointY <= 7) {
         const targetPiece = this.board.at(pointX - 2).at(pointY - 2);
 
-        if (targetPiece?.current_color == -1 && this.checkReverse(targetPiece.putPlayerColor(this.putPlayer), pointX - 2, pointY - 2)) {
+        if (targetPiece?.current_color == -1 && this.checkReverse(targetPiece.putPlayerColor(this.putPlayer), pointX - 2, pointY - 2, true)) {
           targetPiece.put(this.putPlayer);
           this.putPiece(this.putPlayer, pointX, pointY);
           this.putPlayer = this.changePlayer(this.putPlayer);
@@ -166,20 +177,21 @@ class reversiGame extends Phaser.Scene {
       }
     }
   }
-  checkReverse(putColor: number, pointX: number, pointY: number): boolean {
+
+  checkReverse(putColor: number, pointX: number, pointY: number, realFlip: boolean): boolean {
     let flip = false
-    flip = this.flipPiece(putColor, pointX, pointY, -1, -1) || flip
-    flip = this.flipPiece(putColor, pointX, pointY, 0, -1) || flip
-    flip = this.flipPiece(putColor, pointX, pointY, 1, -1) || flip
-    flip = this.flipPiece(putColor, pointX, pointY, -1, 0) || flip
-    flip = this.flipPiece(putColor, pointX, pointY, 1, 0) || flip
-    flip = this.flipPiece(putColor, pointX, pointY, -1, 1) || flip
-    flip = this.flipPiece(putColor, pointX, pointY, 0, 1) || flip
-    flip = this.flipPiece(putColor, pointX, pointY, 1, 1) || flip
+    flip = this.flipPiece(putColor, pointX, pointY, -1, -1, realFlip) || flip
+    flip = this.flipPiece(putColor, pointX, pointY, 0, -1, realFlip) || flip
+    flip = this.flipPiece(putColor, pointX, pointY, 1, -1, realFlip) || flip
+    flip = this.flipPiece(putColor, pointX, pointY, -1, 0, realFlip) || flip
+    flip = this.flipPiece(putColor, pointX, pointY, 1, 0, realFlip) || flip
+    flip = this.flipPiece(putColor, pointX, pointY, -1, 1, realFlip) || flip
+    flip = this.flipPiece(putColor, pointX, pointY, 0, 1, realFlip) || flip
+    flip = this.flipPiece(putColor, pointX, pointY, 1, 1, realFlip) || flip
     return flip
   }
 
-  flipPiece(current_color: number, pointX: number, pointY: number, vectorX: number, vectorY: number): boolean {
+  flipPiece(current_color: number, pointX: number, pointY: number, vectorX: number, vectorY: number, realFlip: boolean): boolean {
     const targetPieces = []
     const flipPieces = []
     let positionX = pointX + vectorX
@@ -199,8 +211,10 @@ class reversiGame extends Phaser.Scene {
           flipPieces.push(targetPieces[i])
         }else if(targetPieces[i]?.current_color == current_color || targetPieces[i]?.current_color == -1){
           if(flipPieces.length != 0){
-            for(let j = 0; j < flipPieces.length; j++){
-              this.putPiece(this.putPlayer, flipPieces[j]?.current_pointX + 2, flipPieces[j]?.current_pointY + 2)
+            if(realFlip){
+              for(let j = 0; j < flipPieces.length; j++){
+                this.putPiece(this.putPlayer, flipPieces[j]?.current_pointX + 2, flipPieces[j]?.current_pointY + 2)
+              }
             }
             return true
           }else{
@@ -218,6 +232,36 @@ class reversiGame extends Phaser.Scene {
     } else {
       return this.WHITE_PLAYER;
     }
+  }
+
+  gameEnd(): void {
+    this.countPiece()
+    let winner = ""
+    if(this.whitePieceNumber == this.blackPieceNumber){
+      this.guiGameEndText = this.add.text(this.guiWidth + 10, 300, `Tie Game!`, {font: '30px Arial'})
+      return
+    }
+
+    if(this.whitePieceNumber > this.blackPieceNumber){
+      winner = "White"
+    }else{
+      winner = "Black"
+    }
+    this.guiGameEndText = this.add.text(this.guiWidth + 10, 300, `${winner} is Winner!`, {font: '30px Arial'})
+  }
+
+  isSkip(putPlayer: string): boolean {
+    let resultSkip = true
+    for(let i = 0; i < this.board.length; i++){
+      for(let j = 0; j < this.board.at(i)?.length; j++){
+        const piece = this.board.at(i)?.at(j)
+
+        if(piece?.current_color == -1 && this.checkReverse(piece.putPlayerColor(putPlayer), i, j, false)){
+          return false
+        }
+      }
+    }
+    return resultSkip
   }
 }
 
